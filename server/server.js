@@ -119,7 +119,7 @@ const handleAction = (data, ws) => {
   });
 }
 
-const handleError = (data, ws) => {
+const handleError = (ws) => {
   return new Promise((resolve, reject) => {
     try {
       const message = {
