@@ -1,0 +1,4 @@
+{
+    "movements": ["forward", "backward", "left", "right"],
+    "requestTypes": ["handshake", "action", "error", "wave"]
+}
