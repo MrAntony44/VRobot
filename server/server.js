@@ -46,9 +46,9 @@ const wss = new WebSocket.Server({ port: 8080 });
 wss.on('connection', ws => {
   ws.on('message', async message => {
     await handle_request(JSON.parse(message), ws);
-    printf("Received message => %s\n", message);
+    console.log("Received message => %s\n", message);
   })
-  ws.send('Hello! Message From Server!!')
+  // ws.send('Hello! Message From Server!!')
 });
 
 const handle_request = async (data, ws) => {
@@ -72,11 +72,18 @@ const handle_request = async (data, ws) => {
       break;
     case requestTypes.ERROR:
       await handleError(ws) // no further error handling
-        .then(() => { 
-          console.log("Error handled successful")
+        .then((message) => { 
+          console.error(message.content)
+          console.log("Error handled successfully")
+          ws.send(JSON.stringify(message));
+          ws.close();
         })
-        .catch((err) => { console.error("Failure handling error; attempted termination of connection. -->", err) });
-      break;
+        .catch((err) => { 
+          console.error("Failure handling error; attempted termination of connection. -->", err) 
+          ws.send(err)
+          ws.terminate()
+        });
+      process.exit()
     case requestTypes.WAVE:
       await handleWave(ws)
         .then(() => { 
@@ -86,7 +93,7 @@ const handle_request = async (data, ws) => {
           console.error("Error handling wave:", err)
           handleError(ws);
         });
-      break;
+        process.exit()
     default:
       console.error('Invalid request type:', data.type);
       handleError(ws);
@@ -114,7 +121,7 @@ const handleAction = (data, ws) => {
     try {
       if(!global_config_data.movements.includes(data.content)) throw new Error('Invalid movement type: ' + data.content);
 
-      const pythonProcess = spawn('python', ['robot.py', data.content, '10']);
+      const pythonProcess = spawn('python3', ['robot.py', data.content, '10']);
       pythonProcess.stdout.on('data', (data) => {
         console.log(`made movement: ${data}`);
       })
@@ -152,12 +159,9 @@ const handleError = (ws) => {
         type: 'error',
         content: 'Terminating connection...',
       };
-      ws.send(JSON.stringify(message));
-      ws.close();
-      resolve();
+      resolve(message);
     } catch (err) {
       console.error('Error handling handshake:', err);
-      ws.terminate();
       reject(err);
     }
   });
