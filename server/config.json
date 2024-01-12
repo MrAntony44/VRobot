@@ -1,8 +1,8 @@
 {
     "motorPins": {
-        "motor1": 16,
-        "motor2": 17,
-        "motor3": 18,
-        "motor4": 19
+        "motor1": [14, 15],
+        "motor2": [16, 17],
+        "motor3": [18, 19],
+        "motor4": [20, 21]
     }
 }

@@ -1,5 +1,4 @@
 const WebSocket = require('ws');
-const Gpio = require('pigpio').Gpio;
 const fs = require('fs');
 const configFile = './config.json';
 const globalConfigFile = '../global_conf.json';
@@ -29,10 +28,10 @@ readFile(configFile)
     throw err;
   })
 
-const motor1 = new Gpio(config_data.motor1, { mode: Gpio.OUTPUT });
-const motor2 = new Gpio(config_data.motor2, { mode: Gpio.OUTPUT });
-const motor3 = new Gpio(config_data.motor3, { mode: Gpio.OUTPUT });
-const motor4 = new Gpio(config_data.motor4, { mode: Gpio.OUTPUT });
+// const motor1 = new Gpio(config_data.motor1, { mode: Gpio.OUTPUT });
+// const motor2 = new Gpio(config_data.motor2, { mode: Gpio.OUTPUT });
+// const motor3 = new Gpio(config_data.motor3, { mode: Gpio.OUTPUT });
+// const motor4 = new Gpio(config_data.motor4, { mode: Gpio.OUTPUT });
 
 const wss = new WebSocket.Server({ port: 8080 });
 
