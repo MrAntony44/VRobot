@@ -2,6 +2,7 @@ const WebSocket = require('ws');
 const fs = require('fs');
 const configFile = './config.json';
 const globalConfigFile = '../global_conf.json';
+const { spawn } = require('child_process');
 
 const requestTypes = {
   HANDSHAKE: 'handshake',
@@ -9,6 +10,18 @@ const requestTypes = {
   ERROR: 'error',
   WAVE: 'wave',
 };
+
+const readFile = (file) => {
+  return new Promise((resolve, reject) => {
+    try {
+      let data = fs.readFileSync(file, 'utf8');
+      file_data = JSON.parse(data);
+      resolve(file_data);
+    } catch (err) {
+      reject(err);
+    }
+  });
+}
 
 var config_data;
 readFile(configFile)
@@ -20,18 +33,13 @@ readFile(configFile)
   })
 
 var global_config_data;
-readFile(configFile)
+readFile(globalConfigFile)
   .then((config) => {
     global_config_data = config
   }) 
   .catch((err) => {
     throw err;
   })
-
-// const motor1 = new Gpio(config_data.motor1, { mode: Gpio.OUTPUT });
-// const motor2 = new Gpio(config_data.motor2, { mode: Gpio.OUTPUT });
-// const motor3 = new Gpio(config_data.motor3, { mode: Gpio.OUTPUT });
-// const motor4 = new Gpio(config_data.motor4, { mode: Gpio.OUTPUT });
 
 const wss = new WebSocket.Server({ port: 8080 });
 
@@ -105,6 +113,25 @@ const handleAction = (data, ws) => {
   return new Promise((resolve, reject) => {
     try {
       if(!global_config_data.movements.includes(data.content)) throw new Error('Invalid movement type: ' + data.content);
+
+      const pythonProcess = spawn('python', ['robot.py', data.content, '10']);
+      pythonProcess.stdout.on('data', (data) => {
+        console.log(`made movement: ${data}`);
+      })
+
+      pythonProcess.stderr.on('data', (data) => {
+        let err = new Error(`stderr output: ${data}`)
+        console.error(err)
+        throw err;
+      })
+
+      pythonProcess.on('close', (code) => {
+        console.log(`child process exited with code ${code}`)
+        if(code === 1){
+          throw new Error("exit code 1 python child")
+        }
+      })
+
       const message = {
         type: 'action',
         content: 'Performing action ${data.content}',
@@ -112,7 +139,7 @@ const handleAction = (data, ws) => {
       ws.send(JSON.stringify(message));
       resolve();
     } catch (err) {
-      console.error('Error handling handshake:', err);
+      console.error('Error handling action:', err);
       reject(err);
     }
   });
@@ -148,18 +175,6 @@ const handleWave = (ws) => {
       resolve();
     } catch (err) {
       console.error('Error handling wave:', err);
-      reject(err);
-    }
-  });
-}
-
-const readFile = (file) => {
-  return new Promise((resolve, reject) => {
-    try {
-      let data = fs.readFileSync(file, 'utf8');
-      file_data = JSON.parse(data);
-      resolve(file_data);
-    } catch (err) {
       reject(err);
     }
   });
