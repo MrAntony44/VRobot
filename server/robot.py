@@ -63,18 +63,13 @@ def make_move(move, time):
     GPIO.cleanup()
 
 def move_set(pinsInfo, sleep_time):
-    pinsArr = []
     print(pinsInfo)
     for pin in range(len(pinsInfo["direction"])):
-        pinsArr.append(GPIO.PWM(allMotorPins[pin][pinsInfo["direction"][pin]], pinsInfo["speed"][pin]))
-
-    for p in pinsArr:
-        p.start(1)
+        GPIO.output(allMotorPins[pin][pinsInfo["direction"][pin]], GPIO.HIGH)
 
     time.sleep(sleep_time)
 
-    for p in pinsArr:
-        p.stop()
+    GPIO.cleanup()
 
 if len(sys.argv) != 3:
     print("error")
