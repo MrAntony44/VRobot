@@ -5,9 +5,9 @@
   "engines": {
     "node": ">=20.10.0"
   },
-  "main": "index.js",
+  "main": "server/server.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "client" : "node client/connect.js"
   },
   "author": "",
   "license": "ISC",

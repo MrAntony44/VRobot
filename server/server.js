@@ -1,7 +1,7 @@
 const WebSocket = require('ws');
 const fs = require('fs');
-const configFile = './config.json';
-const globalConfigFile = '../global_conf.json';
+const configFile = 'server/config.json';
+const globalConfigFile = './global_conf.json';
 const { spawn } = require('child_process');
 
 const requestTypes = {
@@ -27,7 +27,7 @@ var config_data;
 readFile(configFile)
   .then((config) => {
     config_data = config
-  }) 
+  })
   .catch((err) => {
     throw err;
   })
@@ -36,7 +36,7 @@ var global_config_data;
 readFile(globalConfigFile)
   .then((config) => {
     global_config_data = config
-  }) 
+  })
   .catch((err) => {
     throw err;
   })
@@ -48,55 +48,23 @@ wss.on('connection', ws => {
     await handle_request(JSON.parse(message), ws);
     console.log("Received message => %s\n", message);
   })
-  // ws.send('Hello! Message From Server!!')
 });
 
 const handle_request = async (data, ws) => {
-  switch (data.type) {
+  switch (toString(data.type).toLowerCase()) {
     case requestTypes.HANDSHAKE:
       await handleHandshake(ws)
-        .then(() => { 
-          console.log("Handshake successful")
-        })
-        .catch((err) => { console.error("Error handling handshake:", err) });
       break;
     case requestTypes.ACTION:
       await handleAction(data, ws)
-        .then(() => { 
-          console.log("Action successful")
-        })
-        .catch((err) => { 
-          console.error("Error handling action:", err)
-          handleError(ws);
-        });
       break;
     case requestTypes.ERROR:
-      await handleError(ws) // no further error handling
-        .then((message) => { 
-          console.error(message.content)
-          console.log("Error handled successfully")
-          ws.send(JSON.stringify(message));
-          ws.close();
-        })
-        .catch((err) => { 
-          console.error("Failure handling error; attempted termination of connection. -->", err) 
-          ws.send(err)
-          ws.terminate()
-        });
-      process.exit()
+      await handleError(data, ws) // no further error handling
     case requestTypes.WAVE:
       await handleWave(ws)
-        .then(() => { 
-          console.log("Wave successful")
-        })
-        .catch((err) => {
-          console.error("Error handling wave:", err)
-          handleError(ws);
-        });
-        process.exit()
     default:
       console.error('Invalid request type:', data.type);
-      handleError(ws);
+      handleError('Invalid request type', ws);
   }
 }
 
@@ -113,57 +81,64 @@ const handleHandshake = (ws) => { // Handle handshake request
       console.error('Error handling handshake:', err);
       reject(err);
     }
-  });
+  })
+    .then(() => {
+      console.log("Handshake successful")
+    })
+    .catch((err) => { console.error("Error handling handshake:", err) });;
 }
 
 const handleAction = (data, ws) => {
-  return new Promise((resolve, reject) => {
-    try {
-      if(!global_config_data.movements.includes(data.content)) throw new Error('Invalid movement type: ' + data.content);
+  return new Promise(async (resolve, reject) => {
+    const content = toString(data.content).toLowerCase();
+    if (!global_config_data.movements.includes(content)) throw new Error('Invalid movement type: ' + content);
 
-      const pythonProcess = spawn('python3', ['robot.py', data.content, '10']);
-      pythonProcess.stdout.on('data', (data) => {
-        console.log(`made movement: ${data}`);
-      })
+    const pythonProcess = spawn('python3', ['server/robot.py', content, '10']);
 
-      pythonProcess.stderr.on('data', (data) => {
-        let err = new Error(`stderr output: ${data}`)
-        console.error(err)
-        throw err;
-      })
+    pythonProcess.stderr.on('data', (data) => {
+      let err = new Error(`stderr output: ${data}`)
+      reject(err);
+    })
+    pythonProcess.stdout.on('data', (data) => {
+      console.log(`made movement: ${data}`);
+      resolve(data)
+    })
 
-      pythonProcess.on('close', (code) => {
-        console.log(`child process exited with code ${code}`)
-        if(code === 1){
-          throw new Error("exit code 1 python child")
-        }
-      })
+    pythonProcess.on('close', (code) => {
+      console.log(`child process exited with code ${code}`)
+    })
 
+  })
+    .then(data => {
       const message = {
         type: 'action',
-        content: 'Performing action ${data.content}',
+        content: `Performing action ${data.content}`,
       };
       ws.send(JSON.stringify(message));
-      resolve();
-    } catch (err) {
-      console.error('Error handling action:', err);
-      reject(err);
-    }
-  });
+    })
+    .catch((err) => {
+      console.error("Error handling action:", err.message)
+      handleError(err.message, ws);
+    });
 }
 
-const handleError = (ws) => {
+const handleError = (data, ws) => {
   return new Promise((resolve, reject) => {
-    try {
-      const message = {
-        type: 'error',
-        content: 'Terminating connection...',
-      };
-      resolve(message);
-    } catch (err) {
-      console.error('Error handling handshake:', err);
-      reject(err);
-    }
+    const message = {
+      type: 'error',
+      content: data,
+    };
+    resolve(message);
+    console.error('Error :', err);
+  }).then((message) => {
+    console.error(message.content)
+    ws.send(JSON.stringify(message));
+    handleWave(ws);
+  }).catch((err) => {
+    console.error("Failure handling error; attempted termination of connection. -->", err)
+    ws.send(err)
+    ws.terminate()
+    process.exit()
   });
 }
 
@@ -181,5 +156,12 @@ const handleWave = (ws) => {
       console.error('Error handling wave:', err);
       reject(err);
     }
-  });
+  })
+    .then(() => {
+      console.log("Wave successful")
+    })
+    .catch((err) => {
+      console.error("Error handling wave:", err)
+      handleError(err.message, ws);
+    });;
 }
