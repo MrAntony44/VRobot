@@ -1,6 +1,6 @@
 const WebSocket = require('ws');
 
-const ws = new WebSocket('ws://192.168.1.50:8080');
+const ws = new WebSocket('ws://192.168.1.5:8080');
 
 ws.on('open', function open() {
   procHandshake();
