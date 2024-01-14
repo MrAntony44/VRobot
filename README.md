@@ -84,6 +84,12 @@ npm install
 
 ## Testing
 
+Για να τρέξουμε τον Server αρκεί να τρέξουμε στο root-directory του project το command
+
+```bash
+node .
+```
+
 Για τις ανάγκες του testing δημιουργήσαμε το αρχείο `client/connect.js` το οποίο μπορεί να κάνει simulate τα πιθανά requests. To αρχείο μπορεί να το τρέξει κανείς με το:
 
 ```bash

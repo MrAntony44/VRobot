@@ -11,8 +11,6 @@ const requestTypes = {
   WAVE: 'wave',
 };
 
-const WAITING_TIME = '10';
-
 const readFile = (file) => {
   return new Promise((resolve, reject) => {
     try {
@@ -53,8 +51,7 @@ wss.on('connection', ws => {
 });
 
 const handle_request = async (data, ws) => {
-  console.log(data.type.toLowerCase())
-  switch (data.type.toLowerCase()) {
+  switch (toString(data.type).toLowerCase()) {
     case requestTypes.HANDSHAKE:
       await handleHandshake(ws)
       break;
@@ -93,18 +90,18 @@ const handleHandshake = (ws) => { // Handle handshake request
 
 const handleAction = (data, ws) => {
   return new Promise(async (resolve, reject) => {
-    const content = data.content.toLowerCase();
+    const content = toString(data.content).toLowerCase();
     if (!global_config_data.movements.includes(content)) throw new Error('Invalid movement type: ' + content);
 
-    const pythonProcess = spawn('python3', ['server/robot_no_gpio.py', content, WAITING_TIME]);
+    const pythonProcess = spawn('python3', ['server/robot.py', content, '10']);
 
     pythonProcess.stderr.on('data', (data) => {
       let err = new Error(`stderr output: ${data}`)
       reject(err);
     })
-    pythonProcess.stdout.on('data', (stdout) => {
-      console.log(`made movement: ${stdout}`);
-      resolve(content)
+    pythonProcess.stdout.on('data', (data) => {
+      console.log(`made movement: ${data}`);
+      resolve(data)
     })
 
     pythonProcess.on('close', (code) => {
@@ -115,13 +112,13 @@ const handleAction = (data, ws) => {
     .then(data => {
       const message = {
         type: 'action',
-        content: `Performing action ${data}`,
+        content: `Performing action ${data.content}`,
       };
       ws.send(JSON.stringify(message));
     })
     .catch((err) => {
       console.error("Error handling action:", err.message)
-      handleError(err, ws);
+      handleError(err.message, ws);
     });
 }
 
@@ -132,7 +129,7 @@ const handleError = (data, ws) => {
       content: data,
     };
     resolve(message);
-    console.error('Error :', message);
+    console.error('Error :', err);
   }).then((message) => {
     console.error(message.content)
     ws.send(JSON.stringify(message));
