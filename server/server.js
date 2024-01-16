@@ -39,8 +39,8 @@ console.log("Server started")
 console.log("Listening to port: 8080")
 wss.on('connection', ws => {
   ws.on('message', async message => {
+    console.log("Received message => %s => Parsing...\n", message);
     await handle_request(JSON.parse(message), ws);
-    console.log("Received message => %s\n", message);
   })
 });
 
@@ -106,7 +106,7 @@ const handleAction = (data, ws) => {
     })
 
     pythonProcess.on('close', (code) => {
-      console.log(`child process exited with code ${code}`)
+      console.log(`python child process exited with code ${code}`)
     })
 
   }).then(data => {
