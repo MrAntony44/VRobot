@@ -6,8 +6,8 @@ import sys
 class Movements(Enum):
     FORWARD = 'forward'
     BACKWARD = 'backward'
-    LEFT = 'left'
-    RIGHT = 'right'
+    LEFT = 'turnleft'
+    RIGHT = 'turnright'
 
 
 CONFIG_FILE = 'server/config.json'

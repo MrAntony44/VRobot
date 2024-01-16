@@ -85,12 +85,12 @@ const handleHandshake = (ws) => { // Handle handshake request
 
 const handleAction = (data, ws) => {
   return new Promise(async (resolve, reject) => {
+    const content = data.content.toLowerCase();
     let message = {
       type: 'action',
-      content: `Performing action <<${data.content}>>`,
+      content: `Performing action <<${content}>>`,
     };
     ws.send(JSON.stringify(message));
-    const content = data.content.toLowerCase();
     if (!config_data.movements.includes(content)) throw new Error('Invalid movement type: ' + content);
 
     console.log("Making movement: " + content)
