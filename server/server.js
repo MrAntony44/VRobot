@@ -1,7 +1,6 @@
 const WebSocket = require('ws');
 const fs = require('fs');
 const configFile = 'server/config.json';
-const globalConfigFile = './global_conf.json';
 const { spawn } = require('child_process');
 
 const requestTypes = {
@@ -34,17 +33,10 @@ readFile(configFile)
     throw err;
   })
 
-var global_config_data;
-readFile(globalConfigFile)
-  .then((config) => {
-    global_config_data = config
-  })
-  .catch((err) => {
-    throw err;
-  })
-
 const wss = new WebSocket.Server({ port: 8080 });
 
+console.log("Server started")
+console.log("Listening to port: 8080")
 wss.on('connection', ws => {
   ws.on('message', async message => {
     await handle_request(JSON.parse(message), ws);
@@ -94,9 +86,9 @@ const handleHandshake = (ws) => { // Handle handshake request
 const handleAction = (data, ws) => {
   return new Promise(async (resolve, reject) => {
     const content = data.content.toLowerCase();
-    if (!global_config_data.movements.includes(content)) throw new Error('Invalid movement type: ' + content);
+    if (!config_data.movements.includes(content)) throw new Error('Invalid movement type: ' + content);
 
-    const pythonProcess = spawn('python3', ['server/robot_no_gpio.py', content, WAITING_TIME]);
+    const pythonProcess = spawn('python3', ['server/robot.py', content, WAITING_TIME]);
 
     pythonProcess.stderr.on('data', (data) => {
       let err = new Error(`stderr output: ${data}`)

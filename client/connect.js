@@ -1,6 +1,6 @@
 const WebSocket = require('ws');
 
-const ws = new WebSocket('ws://192.168.1.5:8080');
+const ws = new WebSocket('ws://127.0.0.1:8080'); // local ip address of server here. Dont change when running server & client on same machine
 
 ws.on('open', function open() {
   procHandshake();

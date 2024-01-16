@@ -1,4 +1,3 @@
-import RPi.GPIO as GPIO
 import time
 import json
 from enum import Enum
@@ -11,11 +10,7 @@ class Movements(Enum):
     RIGHT = 'right'
 
 
-CONFIG_FILE = './config.json'
-
-GPIO.setmode(GPIO.BCM)
-GPIO.setwarnings(False)
-
+CONFIG_FILE = 'server/config.json'
 with open(CONFIG_FILE, 'r') as f:
     data = json.load(f)
 
@@ -25,10 +20,6 @@ motor3_pins = (data["motorPins"]["motor3"][0], data["motorPins"]["motor3"][1]) #
 motor4_pins = (data["motorPins"]["motor4"][0], data["motorPins"]["motor4"][1]) # back_left
 
 allMotorPins = [motor1_pins, motor2_pins, motor3_pins, motor4_pins]
-
-for pins in allMotorPins:
-    for pin in pins:
-        GPIO.setup(pin, GPIO.OUT)
 
 def make_move(move, time):
     if move == Movements.FORWARD.value:
@@ -60,16 +51,11 @@ def make_move(move, time):
         sys.exit(1)
     
     move_set(pinsInfo, time)
-    GPIO.cleanup()
 
 def move_set(pinsInfo, sleep_time):
     print(pinsInfo)
-    for pin in range(len(pinsInfo["direction"])):
-        GPIO.output(allMotorPins[pin][pinsInfo["direction"][pin]], GPIO.HIGH)
-
     time.sleep(sleep_time)
 
-    GPIO.cleanup()
 
 if len(sys.argv) != 3:
     print("error")

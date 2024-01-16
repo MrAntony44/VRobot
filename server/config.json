@@ -4,5 +4,6 @@
         "motor2": [23, 24],
         "motor3": [5, 6],
         "motor4": [20, 21]
-    }
+    },
+    "movements": ["forward", "backward", "left", "right"]
 }
