@@ -12,7 +12,7 @@ For implementation, please add an input field in unity so different local addres
 ## Requests to be implemented in Unity
 ### procHandshake  
 Body of request:  
-```json
+```js
 {
 	type: 'handshake',
 	content: ''
@@ -20,7 +20,7 @@ Body of request:
 ```
 ### procAction  
 Body of request:  
-```json
+```js
 {
 	type: 'action',
 	content: data
@@ -30,7 +30,7 @@ Body of request:
 
 ### procError
 Body of request:  
-```json
+```js
 {
 	type: 'error',
 	content: 'Error content here'
@@ -40,7 +40,7 @@ Body of request:
 
 ### procWave
 Body of request:  
-```json
+```js
 {
 	type: 'wave',
 	content: 'Wave message here'
