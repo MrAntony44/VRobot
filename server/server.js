@@ -45,7 +45,7 @@ wss.on('connection', ws => {
 });
 
 const handle_request = async (data, ws) => {
-  console.log(data.type.toLowerCase())
+  console.log("Request received from client: " + data.type.toLowerCase())
   switch (data.type.toLowerCase()) {
     case requestTypes.HANDSHAKE:
       await handleHandshake(ws)
@@ -93,6 +93,7 @@ const handleAction = (data, ws) => {
     const content = data.content.toLowerCase();
     if (!config_data.movements.includes(content)) throw new Error('Invalid movement type: ' + content);
 
+    console.log("Making movement: " + content)
     const pythonProcess = spawn('python3', ['server/robot.py', content, WAITING_TIME]);
 
     pythonProcess.stderr.on('data', (data) => {
