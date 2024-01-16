@@ -85,6 +85,11 @@ const handleHandshake = (ws) => { // Handle handshake request
 
 const handleAction = (data, ws) => {
   return new Promise(async (resolve, reject) => {
+    let message = {
+      type: 'action',
+      content: `Performing action ${data}`,
+    };
+    ws.send(JSON.stringify(message));
     const content = data.content.toLowerCase();
     if (!config_data.movements.includes(content)) throw new Error('Invalid movement type: ' + content);
 
@@ -103,11 +108,10 @@ const handleAction = (data, ws) => {
       console.log(`child process exited with code ${code}`)
     })
 
-  })
-    .then(data => {
-      const message = {
+  }).then(data => {
+      let message = {
         type: 'action',
-        content: `Performing action ${data}`,
+        content: `Performed action ${data} successfully`,
       };
       ws.send(JSON.stringify(message));
     })
