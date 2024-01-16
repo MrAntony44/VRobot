@@ -22,7 +22,7 @@ const procHandshake = () => {
 const procAction = (data) => {
   const message = {
     type: 'action',
-    content: data // also: backward, left, right
+    content: data // also: backward, turnleft, turnright
   };
   ws.send(JSON.stringify(message));
 }
