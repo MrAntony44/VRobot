@@ -33,11 +33,12 @@ npm install
 
 Αν θέλει το ρομπότ να κάνει κάποια κίνηση, πρέπει να στείλει ένα `Action`. Τα `Actions` προς το παρόν είναι τα εξής 4:
 
-```enum
-    FORWARD
-    BACKWARD
-    LEFT
-    RIGHT
+```
+class Movements(Enum):
+    FORWARD = 'forward'
+    BACKWARD = 'backward'
+    LEFT = 'turnleft'
+    RIGHT = 'turnright'
 ```
 
  Ένα `JSON` μήνυμα για το `Action` να είναι το εξής:
