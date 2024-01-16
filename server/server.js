@@ -87,7 +87,7 @@ const handleAction = (data, ws) => {
   return new Promise(async (resolve, reject) => {
     let message = {
       type: 'action',
-      content: `Performing action ${data}`,
+      content: `Performing action ${data.content}`,
     };
     ws.send(JSON.stringify(message));
     const content = data.content.toLowerCase();
@@ -111,7 +111,7 @@ const handleAction = (data, ws) => {
   }).then(data => {
       let message = {
         type: 'action',
-        content: `Performed action ${data} successfully`,
+        content: `Performed action <<${data}>> successfully`,
       };
       ws.send(JSON.stringify(message));
     })
