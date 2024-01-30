@@ -63,8 +63,10 @@ const handle_request = async (data, ws) => {
       break;
     case requestTypes.ERROR:
       await handleError(data, ws) // no further error handling
+      break;
     case requestTypes.WAVE:
       await handleWave(ws)
+      break;
     default:
       console.error('Invalid request type:', data.type);
       handleError('Invalid request type', ws);
@@ -94,9 +96,9 @@ const handleHandshake = (ws) => { // Handle handshake request
 const handleAction = (data, ws) => {
   return new Promise(async (resolve, reject) => {
     const content = data.content.toLowerCase();
-    if (!global_config_data.movements.includes(content)) throw new Error('Invalid movement type: ' + content);
+    if (!global_config_data.movements.includes(content)) reject(new Error('Invalid movement type: ' + content));
 
-    const pythonProcess = spawn('python3', ['server/robot_no_gpio.py', content, WAITING_TIME]);
+    const pythonProcess = spawn('python3', ['server/robot.py', content, WAITING_TIME]);
 
     pythonProcess.stderr.on('data', (data) => {
       let err = new Error(`stderr output: ${data}`)
@@ -120,7 +122,7 @@ const handleAction = (data, ws) => {
       ws.send(JSON.stringify(message));
     })
     .catch((err) => {
-      console.error("Error handling action:", err.message)
+      console.error("Error handling action:", err)
       handleError(err, ws);
     });
 }
@@ -129,12 +131,12 @@ const handleError = (data, ws) => {
   return new Promise((resolve, reject) => {
     const message = {
       type: 'error',
-      content: data,
+      content: data.content,
     };
     resolve(message);
     console.error('Error :', message);
   }).then((message) => {
-    console.error(message.content)
+    //console.error(message.content)
     ws.send(JSON.stringify(message));
     handleWave(ws);
   }).catch((err) => {

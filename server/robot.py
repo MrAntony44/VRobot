@@ -4,27 +4,27 @@ import json
 from enum import Enum
 import sys
 
+GLOBAL_CONFIG = './global_conf.json'
+CONFIG_FILE = 'server/config.json'
+
+with open(GLOBAL_CONFIG, 'r') as f:
+    movementValues = json.load(f)["movements"]
+
+with open(CONFIG_FILE, 'r') as f:
+    motorPinValues = json.load(f)["motorPins"]
+
 class Movements(Enum):
-    FORWARD = 'forward'
-    BACKWARD = 'backward'
-    LEFT = 'left'
-    RIGHT = 'right'
+    FORWARD, BACKWARD, LEFT, RIGHT = movementValues
 
+motor1_pins = tuple(motorPinValues['motor1'])
+motor2_pins = tuple(motorPinValues['motor2'])
+motor3_pins = tuple(motorPinValues['motor3'])
+motor4_pins = tuple(motorPinValues['motor4'])
 
-CONFIG_FILE = './config.json'
+allMotorPins = [motor1_pins, motor2_pins, motor3_pins, motor4_pins]
 
 GPIO.setmode(GPIO.BCM)
 GPIO.setwarnings(False)
-
-with open(CONFIG_FILE, 'r') as f:
-    data = json.load(f)
-
-motor1_pins = (data["motorPins"]["motor1"][0], data["motorPins"]["motor1"][1]) # front_left
-motor2_pins = (data["motorPins"]["motor2"][0], data["motorPins"]["motor2"][1]) # front_right
-motor3_pins = (data["motorPins"]["motor3"][0], data["motorPins"]["motor3"][1]) # back_right
-motor4_pins = (data["motorPins"]["motor4"][0], data["motorPins"]["motor4"][1]) # back_left
-
-allMotorPins = [motor1_pins, motor2_pins, motor3_pins, motor4_pins]
 
 for pins in allMotorPins:
     for pin in pins:
@@ -72,6 +72,5 @@ def move_set(pinsInfo, sleep_time):
     GPIO.cleanup()
 
 if len(sys.argv) != 3:
-    print("error")
-    sys.exit(1)
+    raise ValueError("Error! Invalid number of arguments")
 make_move(sys.argv[1], int(sys.argv[2]))
