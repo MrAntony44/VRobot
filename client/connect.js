@@ -1,10 +1,10 @@
 const WebSocket = require('ws');
 
-const ws = new WebSocket('ws://192.168.1.5:8080');
+const ws = new WebSocket('ws://192.168.95.157:8080');
 
 ws.on('open', function open() {
   procHandshake();
-  procAction('backward');
+  procAction('turnright');
 });
 
 ws.on('message', function incoming(data) {
