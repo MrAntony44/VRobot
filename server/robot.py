@@ -24,7 +24,7 @@ motor4_pins = tuple(motorPinValues['motor4'])
 allMotorPins = [motor1_pins, motor2_pins, motor3_pins, motor4_pins]
 
 GPIO.setmode(GPIO.BCM)
-GPIO.setwarnings(False)
+GPIO.setwarnings(True)
 
 for pins in allMotorPins:
     for pin in pins:
@@ -65,7 +65,10 @@ def make_move(move, time):
 def move_set(pinsInfo, sleep_time):
     print(pinsInfo)
     for pin in range(len(pinsInfo["direction"])):
-        GPIO.output(allMotorPins[pin][pinsInfo["direction"][pin]], GPIO.HIGH)
+        temp = pinsInfo["direction"][pin]
+        
+        GPIO.output(allMotorPins[pin][temp], GPIO.HIGH)
+        GPIO.output(allMotorPins[pin][0 if [temp == 1] else 1], GPIO.LOW)
 
     time.sleep(sleep_time)
 

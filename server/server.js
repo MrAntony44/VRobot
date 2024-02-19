@@ -11,7 +11,7 @@ const requestTypes = {
   WAVE: 'wave',
 };
 
-const WAITING_TIME = '10';
+const WAITING_TIME = '3';
 
 const readFile = (file) => {
   return new Promise((resolve, reject) => {
